@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash of Clans Current War Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        #warInfo {
+            margin-top: 20px;
+        }
+        #countdown {
+            font-size: 1.5em;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Current War Information</h1>
+    <div id="warInfo">Loading...</div>
+    <div id="countdown"></div>
+
+    <script>
+        async function fetchWarInfo() {
+            const url = 'https://cocproxy.royaleapi.dev/v1/clans/%232L22J00JV/currentwar';
+            const options = {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjE1YTMxOTk5LTNjOGQtNDNiOC1iNmNmLTllZGNkNDQ4ODRjZSIsImlhdCI6MTcyNDg2MTgwOCwic3ViIjoiZGV2ZWxvcGVyL2JmOTAyMmUxLWU0MTUtMjdhYi1iOThmLWMzYzRhNTMwN2Q4ZSIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjQ1Ljc5LjIxOC43OSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.ferFVWvOsHNwTaDux6upSuXRo7UmIZXzqPbF2cGc1GfA3QCfwSJ-z2KV-39h8G6bT7SjRd9qeteJDnJTqS3OsQ'
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                displayWarInfo(data);
+            } catch (error) {
+                document.getElementById('warInfo').textContent = 'Error fetching war information';
+                console.error('Error:', error);
+            }
+        }
+
+        function displayWarInfo(data) {
+            const warInfo = document.getElementById('warInfo');
+            if (data && data.state && data.endTime) {
+                const state = data.state;
+                const endTime = new Date(data.endTime);
+                
+                warInfo.innerHTML = `
+                    <p><strong>State:</strong> ${state}</p>
+                    <p><strong>End Time:</strong> ${endTime.toLocaleString()}</p>
+                `;
+
+                startCountdown(endTime);
+            } else {
+                warInfo.textContent = 'No war data available';
+            }
+        }
+
+        function startCountdown(endTime) {
+            const countdownElement = document.getElementById('countdown');
+
+            function updateCountdown() {
+                const now = new Date();
+                const timeRemaining = endTime - now;
+
+                if (timeRemaining > 0) {
+                    const hours = Math.floor((timeRemaining / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((timeRemaining / (1000 * 60)) % 60);
+                    const seconds = Math.floor((timeRemaining / 1000) % 60);
+                    countdownElement.textContent = `Time remaining: ${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    countdownElement.textContent = 'War has ended';
+                    clearInterval(intervalId);
+                }
+            }
+
+            updateCountdown(); // Initial call
+            const intervalId = setInterval(updateCountdown, 1000); // Update every second
+        }
+
+        // Fetch the war information when the page loads
+        fetchWarInfo();
+    </script>
+</body>
+</html>
